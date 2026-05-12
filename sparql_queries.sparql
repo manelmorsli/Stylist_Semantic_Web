@@ -1,0 +1,117 @@
+# ============================================================
+# SPARQL Queries — Ontologie de la Mode
+# Base IRI : http://www.semanticweb.org/manel/ontologies/2025/1/la_mode#
+# Usage : copier-coller chaque requête dans l'onglet SPARQL de Protégé
+# ============================================================
+
+PREFIX rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX owl:    <http://www.w3.org/2002/07/owl#>
+PREFIX rdfs:   <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX xsd:    <http://www.w3.org/2001/XMLSchema#>
+PREFIX mode:   <http://www.semanticweb.org/manel/ontologies/2025/1/la_mode#>
+
+
+# ------------------------------------------------------------
+# Requête 1 — Hiérarchie des classes (relations rdfs:subClassOf)
+# Affiche toutes les paires (sous-classe, super-classe) de l'ontologie.
+# ------------------------------------------------------------
+SELECT ?sousClasse ?superClasse
+WHERE {
+  ?sousClasse rdfs:subClassOf ?superClasse .
+  FILTER (!isBlank(?sousClasse) && !isBlank(?superClasse))
+}
+ORDER BY ?superClasse ?sousClasse
+
+
+# ------------------------------------------------------------
+# Requête 2 — Tous les Créateurs de Mode
+# Affiche le nom, la date de naissance et le pays d'origine
+# de chaque individu de type Créateur_de_Mode.
+# ------------------------------------------------------------
+SELECT ?createur ?nom ?dateNaissance ?paysOrigine
+WHERE {
+  ?createur a mode:Créateur_de_Mode .
+  OPTIONAL { ?createur mode:nom          ?nom          . }
+  OPTIONAL { ?createur mode:dateNaissance ?dateNaissance . }
+  OPTIONAL { ?createur mode:paysOrigine  ?paysOrigine  . }
+}
+ORDER BY ?nom
+
+
+# ------------------------------------------------------------
+# Requête 3 — Éléments de type Convergence (avec nom et description)
+# Affiche les tendances qui convergent avec leur intitulé et leur description.
+# ------------------------------------------------------------
+SELECT ?element ?nom ?description
+WHERE {
+  ?element a mode:Convergence .
+  OPTIONAL { ?element mode:nom         ?nom         . }
+  OPTIONAL { ?element mode:description ?description . }
+}
+
+
+# ------------------------------------------------------------
+# Requête 4 — Toutes les Tendances
+# Liste les tendances connues avec leur description.
+# ------------------------------------------------------------
+SELECT ?tendance ?nom ?description
+WHERE {
+  ?tendance a mode:Tendance .
+  OPTIONAL { ?tendance mode:nom         ?nom         . }
+  OPTIONAL { ?tendance mode:description ?description . }
+}
+ORDER BY ?nom
+
+
+# ------------------------------------------------------------
+# Requête 5 — Individus et leurs classes (sameAs inclus)
+# Montre l'alias owl:sameAs (ex : Coco_Chanel = Gabrielle_Chasnel).
+# ------------------------------------------------------------
+SELECT ?individu ?type ?alias
+WHERE {
+  ?individu a ?type .
+  OPTIONAL { ?individu owl:sameAs ?alias . }
+  FILTER (?type != owl:NamedIndividual)
+}
+ORDER BY ?type
+
+
+# ------------------------------------------------------------
+# Requête 6 — Propriétés de données de tous les individus
+# Affiche chaque individu avec l'ensemble de ses valeurs de propriétés.
+# ------------------------------------------------------------
+SELECT ?individu ?propriete ?valeur
+WHERE {
+  ?individu a owl:NamedIndividual .
+  ?individu ?propriete ?valeur .
+  FILTER (isLiteral(?valeur))
+}
+ORDER BY ?individu ?propriete
+
+
+# ------------------------------------------------------------
+# Requête 7 — Créateurs nés avant 1950
+# Filtre par date de naissance pour une recherche temporelle.
+# ------------------------------------------------------------
+SELECT ?createur ?nom ?dateNaissance
+WHERE {
+  ?createur a mode:Créateur_de_Mode .
+  ?createur mode:nom           ?nom .
+  ?createur mode:dateNaissance ?dateNaissance .
+  FILTER (?dateNaissance < "1950-01-01T00:00:00"^^xsd:dateTime)
+}
+ORDER BY ?dateNaissance
+
+
+# ------------------------------------------------------------
+# Requête 8 — Propriétés objets entre individus
+# Liste toutes les relations entre individus (hors rdf:type, owl:sameAs).
+# ------------------------------------------------------------
+SELECT ?sujet ?relation ?objet
+WHERE {
+  ?sujet ?relation ?objet .
+  FILTER (isIRI(?objet))
+  FILTER (?relation != rdf:type && ?relation != owl:sameAs)
+  FILTER EXISTS { ?sujet a owl:NamedIndividual . }
+}
+ORDER BY ?sujet

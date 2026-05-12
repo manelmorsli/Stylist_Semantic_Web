@@ -1,0 +1,8 @@
+# Portfolio report — keep locally, do NOT push to GitHub
+rapport.html
+
+# PDF reports belong to portfolio, not to the repo
+*.pdf
+
+# Raw source dumps (replaced by la_mode.owl)
+owl/

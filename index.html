@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ontologie de la Mode — Semantic Web</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👗</text></svg>">
+<script src="data.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f8fafc;--surface:#ffffff;--surface2:#f1f5f9;--card:#ffffff;
+  --accent:#6366f1;--accent2:#ec4899;--text:#111827;--muted:#6b7280;
+  --border:#e5e7eb;--r:10px;--green:#059669;--blue:#2563eb;--orange:#d97706;
+  --shadow:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.05);
+  --shadow-md:0 4px 6px -1px rgba(0,0,0,.07),0 2px 4px -1px rgba(0,0,0,.05);
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;font-size:15px;line-height:1.6}
+
+/* ── HEADER ── */
+header{background:var(--surface);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 2rem;height:62px;position:sticky;top:0;z-index:200;box-shadow:var(--shadow)}
+.logo{display:flex;align-items:center;gap:.8rem}
+.logo-icon{width:36px;height:36px;background:linear-gradient(135deg,var(--accent),var(--accent2));
+  border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.logo h1{font-size:1.05rem;font-weight:700;color:var(--text)}
+.logo h1 span{color:var(--accent)}
+.badge-web{background:linear-gradient(135deg,#eef2ff,#fdf2f8);
+  border:1px solid #c7d2fe;color:var(--accent);padding:3px 12px;
+  border-radius:20px;font-size:.75rem;font-weight:600;letter-spacing:.4px}
+
+/* ── NAV TABS ── */
+nav{display:flex;gap:0;padding:0 2rem;background:var(--surface);
+  border-bottom:1px solid var(--border);overflow-x:auto}
+.tab{background:none;border:none;color:var(--muted);cursor:pointer;
+  padding:.75rem 1.2rem;font-size:.88rem;font-weight:500;
+  border-bottom:2px solid transparent;transition:all .2s;white-space:nowrap}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+
+/* ── LAYOUT ── */
+.main{display:flex;min-height:calc(100vh - 108px)}
+.sidebar{width:260px;min-width:260px;background:var(--surface);
+  border-right:1px solid var(--border);padding:1.2rem;
+  overflow-y:auto;max-height:calc(100vh - 108px);position:sticky;top:108px}
+.content{flex:1;padding:1.8rem;overflow-y:auto;min-width:0}
+
+/* ── SIDEBAR TREE ── */
+.sidebar h3{font-size:.72rem;text-transform:uppercase;letter-spacing:1px;
+  color:var(--muted);margin-bottom:.8rem;padding-bottom:.5rem;border-bottom:1px solid var(--border)}
+.tree-node{cursor:pointer;padding:.32rem .5rem;border-radius:6px;
+  font-size:.83rem;margin:.1rem 0;transition:background .15s;display:flex;align-items:center;gap:.5rem;color:var(--text)}
+.tree-node:hover{background:var(--surface2)}
+.tree-node.active{background:#eef2ff;color:var(--accent)}
+.tree-children{margin-left:1.1rem;border-left:2px solid var(--border);padding-left:.6rem}
+.tree-toggle{color:var(--muted);font-size:.65rem;width:10px}
+.class-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+
+/* ── TABS ── */
+.tab-panel{display:none}.tab-panel.active{display:block}
+
+/* ── STATS ── */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1rem;margin-bottom:1.8rem}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);
+  padding:1.2rem;text-align:center;box-shadow:var(--shadow)}
+.stat-num{font-size:2rem;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.stat-label{color:var(--muted);font-size:.8rem;margin-top:.2rem}
+
+/* ── SECTION TITLE ── */
+.section-title{font-size:1.1rem;font-weight:700;margin-bottom:1rem;
+  display:flex;align-items:center;gap:.6rem;color:var(--text)}
+.section-title::before{content:'';display:block;width:3px;height:18px;
+  background:linear-gradient(var(--accent),var(--accent2));border-radius:2px}
+
+/* ── CLASS CARDS ── */
+.class-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:1rem}
+.class-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);
+  padding:1.2rem;box-shadow:var(--shadow);transition:box-shadow .2s,transform .2s}
+.class-card:hover{box-shadow:var(--shadow-md);transform:translateY(-1px)}
+.class-card h4{font-size:.95rem;margin-bottom:.4rem;color:var(--text)}
+.class-card .parent{font-size:.78rem;color:var(--muted);margin-bottom:.5rem}
+.class-card .comment{font-size:.82rem;color:var(--muted);line-height:1.5}
+.class-badge{display:inline-block;padding:2px 9px;border-radius:20px;font-size:.72rem;font-weight:600;margin-bottom:.5rem}
+.badge-industrie{background:#eff6ff;color:var(--blue);border:1px solid #bfdbfe}
+.badge-socio{background:#fdf2f8;color:var(--accent2);border:1px solid #fbcfe8}
+.badge-attr{background:#f0fdf4;color:var(--green);border:1px solid #bbf7d0}
+.badge-root{background:#f5f3ff;color:var(--accent);border:1px solid #ddd6fe}
+
+/* ── INDIVIDUAL FILTER ── */
+.ind-filter{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1.2rem;align-items:center}
+.ind-filter input{flex:1;min-width:180px;padding:.5rem .9rem;border:1px solid var(--border);
+  border-radius:8px;font-size:.85rem;background:var(--surface);color:var(--text);outline:none}
+.ind-filter input:focus{border-color:var(--accent);box-shadow:0 0 0 3px #eef2ff}
+.filter-btn{padding:.4rem .9rem;border-radius:20px;border:1px solid var(--border);
+  background:var(--surface);color:var(--muted);font-size:.8rem;cursor:pointer;transition:all .15s;font-weight:500}
+.filter-btn:hover{border-color:var(--accent);color:var(--accent)}
+.filter-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.ind-count{font-size:.8rem;color:var(--muted);margin-left:auto}
+
+/* ── INDIVIDUAL CARDS ── */
+.ind-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:1rem}
+.ind-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);
+  padding:1.1rem;box-shadow:var(--shadow);transition:box-shadow .2s}
+.ind-card:hover{box-shadow:var(--shadow-md)}
+.ind-header{display:flex;align-items:center;gap:.75rem;margin-bottom:.7rem}
+.ind-avatar{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-size:1.1rem;flex-shrink:0;border:2px solid transparent}
+.ind-name{font-weight:700;font-size:.9rem;color:var(--text)}
+.ind-type{font-size:.75rem;color:var(--muted)}
+.ind-sameas{font-size:.72rem;background:#f0fdf4;color:var(--green);
+  padding:1px 7px;border-radius:20px;display:inline-block;margin-top:.25rem;border:1px solid #bbf7d0}
+.prop-row{display:flex;gap:.4rem;margin:.25rem 0;font-size:.8rem;align-items:flex-start}
+.prop-key{color:var(--accent);font-weight:600;min-width:90px;flex-shrink:0;font-size:.77rem}
+.prop-val{color:var(--muted)}
+
+/* ── PROPERTY TABLE ── */
+.prop-table{width:100%;border-collapse:collapse;margin-bottom:1.8rem;font-size:.85rem}
+.prop-table th{background:var(--surface2);color:var(--muted);text-align:left;
+  padding:.65rem .9rem;font-size:.75rem;text-transform:uppercase;letter-spacing:.5px;
+  border-bottom:2px solid var(--border)}
+.prop-table td{padding:.6rem .9rem;border-bottom:1px solid var(--border)}
+.prop-table tr:hover td{background:var(--surface2)}
+.prop-name{color:var(--text);font-weight:600}
+.prop-domain{color:var(--blue);font-size:.8rem}
+.prop-range{color:var(--accent);font-size:.8rem}
+.prop-type{color:var(--green);font-size:.8rem}
+code.inline{background:var(--surface2);padding:1px 6px;border-radius:4px;
+  font-family:'Consolas','Courier New',monospace;font-size:.8em;color:var(--accent);border:1px solid var(--border)}
+.func-badge{background:#fff7ed;color:var(--orange);padding:1px 7px;
+  border-radius:10px;font-size:.72rem;border:1px solid #fed7aa}
+
+/* ── SPARQL ── */
+.sparql-layout{display:grid;grid-template-columns:240px 1fr;gap:1.2rem}
+.query-list{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);
+  padding:1rem;box-shadow:var(--shadow)}
+.query-list h3{font-size:.72rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:.8rem}
+.query-item{padding:.5rem .7rem;border-radius:6px;cursor:pointer;
+  font-size:.82rem;margin:.15rem 0;color:var(--text);transition:background .15s}
+.query-item:hover{background:var(--surface2)}
+.query-item.active{background:#eef2ff;color:var(--accent);font-weight:500}
+.query-panel{display:flex;flex-direction:column;gap:1rem}
+.query-title{font-size:1rem;font-weight:700;color:var(--text)}
+.query-desc{font-size:.84rem;color:var(--muted)}
+.code-block{background:#1e1e2e;border:1px solid var(--border);border-radius:var(--r);
+  padding:1.1rem;font-family:'Consolas','Courier New',monospace;font-size:.81rem;
+  overflow-x:auto;line-height:1.8;position:relative}
+.code-block pre{white-space:pre-wrap;word-break:break-word}
+.sparql-kw{color:#c792ea}.sparql-pfx{color:#82aaff}.sparql-var{color:#f78c6c}.sparql-iri{color:#c3e88d}
+.results-table{width:100%;border-collapse:collapse;font-size:.82rem}
+.results-table th{background:var(--surface2);color:var(--muted);text-align:left;
+  padding:.55rem .8rem;font-size:.74rem;text-transform:uppercase;border-bottom:2px solid var(--border)}
+.results-table td{padding:.5rem .8rem;border-bottom:1px solid var(--border)}
+.results-table tr:hover td{background:var(--surface2)}
+.results-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);
+  padding:1rem;overflow-x:auto;box-shadow:var(--shadow)}
+.results-label{font-size:.72rem;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:.6rem}
+.row-count{font-size:.76rem;color:var(--green);margin-top:.5rem}
+
+/* ── CODE VIEW ── */
+.code-tabs{display:flex;gap:.3rem;margin-bottom:1rem}
+.code-tab-btn{padding:.4rem 1rem;border-radius:6px;border:1px solid var(--border);
+  background:var(--surface);color:var(--muted);font-size:.83rem;cursor:pointer;transition:all .15s}
+.code-tab-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.owl-code-wrap{background:#1e1e2e;border:1px solid var(--border);border-radius:var(--r);
+  overflow:auto;max-height:68vh;position:relative}
+.copy-btn{position:sticky;top:.7rem;float:right;margin:.7rem .7rem 0 0;
+  background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:#ccc;
+  padding:.35rem .8rem;border-radius:6px;cursor:pointer;font-size:.78rem;
+  transition:background .2s;z-index:10;backdrop-filter:blur(4px)}
+.copy-btn:hover{background:rgba(255,255,255,.2)}
+.owl-code{font-family:'Consolas','Courier New',monospace;font-size:.79rem;
+  line-height:1.75;padding:1.1rem;white-space:pre;color:#ccd6f6}
+.xml-tag{color:#82aaff}.xml-attr{color:#ffcb6b}.xml-val{color:#c3e88d}
+.xml-cmt{color:#546e7a;font-style:italic}
+.loading-msg{color:var(--muted);padding:2rem;text-align:center;font-size:.9rem}
+
+/* ── PILLS ── */
+.pill{display:inline-block;padding:2px 8px;border-radius:20px;font-size:.73rem;font-weight:600;margin:.1rem}
+.pill-blue{background:#eff6ff;color:var(--blue);border:1px solid #bfdbfe}
+.pill-pink{background:#fdf2f8;color:var(--accent2);border:1px solid #fbcfe8}
+.pill-violet{background:#f5f3ff;color:var(--accent);border:1px solid #ddd6fe}
+.pill-green{background:#f0fdf4;color:var(--green);border:1px solid #bbf7d0}
+
+/* ── FOOTER ── */
+footer{border-top:1px solid var(--border);background:var(--surface);
+  padding:.9rem 2rem;font-size:.78rem;color:var(--muted);text-align:center}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:var(--surface2)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+
+@media(max-width:768px){
+  .main{flex-direction:column}
+  .sidebar{width:100%;min-width:0;position:relative;top:0;max-height:none}
+  .sparql-layout{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">👗</div>
+    <h1><span>Ontologie</span> de la Mode</h1>
+  </div>
+  <span class="badge-web">Semantic Web · OWL 2 / RDF / SPARQL</span>
+</header>
+
+<nav id="nav-tabs">
+  <button class="tab active" data-tab="overview">Vue d'ensemble</button>
+  <button class="tab" data-tab="classes">Classes</button>
+  <button class="tab" data-tab="individus">Individus</button>
+  <button class="tab" data-tab="proprietes">Propriétés</button>
+  <button class="tab" data-tab="sparql">SPARQL</button>
+  <button class="tab" data-tab="code">Code RDF</button>
+</nav>
+
+<div class="main">
+  <aside class="sidebar">
+    <h3>Hiérarchie des classes</h3>
+    <div id="class-tree"></div>
+  </aside>
+
+  <main class="content">
+
+    <!-- ── VUE D'ENSEMBLE ── -->
+    <div class="tab-panel active" id="tab-overview">
+      <div class="section-title">Tableau de bord</div>
+      <div class="stats" id="stats-area"></div>
+
+      <div class="section-title">À propos de l'ontologie</div>
+      <div class="class-card" style="max-width:680px;margin-bottom:1.5rem">
+        <p style="color:var(--muted);font-size:.9rem;line-height:1.8">
+          Cette ontologie modélise formellement le domaine de la
+          <strong style="color:var(--accent)">mode vestimentaire</strong>
+          en capturant les entités industrielles (créateurs, marques, tendances) et les phénomènes
+          sociologiques qui expliquent comment la mode naît, se propage et disparaît.
+          Encodée en <strong style="color:var(--blue)">OWL 2 / RDF-XML</strong>,
+          interrogeable via <strong style="color:var(--green)">SPARQL 1.1</strong>,
+          éditée dans <strong>Protégé 5.x</strong>.
+        </p>
+      </div>
+
+      <div class="section-title">Deux branches racines</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;max-width:660px;margin-bottom:1.5rem">
+        <div class="class-card">
+          <span class="class-badge badge-industrie">Industrie</span>
+          <h4>Industrie de la Mode</h4>
+          <p class="comment">Créateurs, Marques, Tendances, Convergences — les acteurs économiques et stylistiques.</p>
+        </div>
+        <div class="class-card">
+          <span class="class-badge badge-socio">Sociologie</span>
+          <h4>Sociologie de la Mode</h4>
+          <p class="comment">Affirmation, Autonomie, Impérialisation, Personnalisation, Symbolisation.</p>
+        </div>
+      </div>
+
+      <div class="section-title">Individus en vedette</div>
+      <div id="overview-highlights" class="ind-grid"></div>
+    </div>
+
+    <!-- ── CLASSES ── -->
+    <div class="tab-panel" id="tab-classes">
+      <div class="section-title">Classes de l'ontologie</div>
+      <div id="class-grid-area" class="class-grid"></div>
+    </div>
+
+    <!-- ── INDIVIDUS ── -->
+    <div class="tab-panel" id="tab-individus">
+      <div class="section-title">Individus nommés</div>
+      <div class="ind-filter">
+        <input id="ind-search" type="text" placeholder="Rechercher un individu…" oninput="filterInds()">
+        <button class="filter-btn active" data-cat="all"       onclick="setCat(this)">Tous</button>
+        <button class="filter-btn"        data-cat="createur"  onclick="setCat(this)">Créateurs</button>
+        <button class="filter-btn"        data-cat="marque"    onclick="setCat(this)">Marques</button>
+        <button class="filter-btn"        data-cat="tendance"  onclick="setCat(this)">Tendances</button>
+        <span class="ind-count" id="ind-count"></span>
+      </div>
+      <div id="ind-grid-area" class="ind-grid"></div>
+    </div>
+
+    <!-- ── PROPRIÉTÉS ── -->
+    <div class="tab-panel" id="tab-proprietes">
+      <div class="section-title">Propriétés Objet (Object Properties)</div>
+      <table class="prop-table">
+        <thead><tr><th>Propriété</th><th>Domaine</th><th>Portée</th></tr></thead>
+        <tbody id="obj-props-tbody"></tbody>
+      </table>
+
+      <div class="section-title">Propriétés de données (Data Properties)</div>
+      <table class="prop-table">
+        <thead><tr><th>Propriété</th><th>Domaine</th><th>Type XSD</th><th>Contrainte</th></tr></thead>
+        <tbody id="data-props-tbody"></tbody>
+      </table>
+
+      <div class="section-title">Contraintes de disjonction (owl:AllDisjointClasses)</div>
+      <div id="disjoint-area"></div>
+    </div>
+
+    <!-- ── SPARQL ── -->
+    <div class="tab-panel" id="tab-sparql">
+      <div class="section-title">Requêtes SPARQL 1.1</div>
+      <div class="sparql-layout">
+        <div class="query-list">
+          <h3>Requêtes disponibles</h3>
+          <div id="query-list"></div>
+        </div>
+        <div class="query-panel" id="sparql-panel"></div>
+      </div>
+    </div>
+
+    <!-- ── CODE RDF ── -->
+    <div class="tab-panel" id="tab-code">
+      <div class="section-title">Code source RDF/XML</div>
+      <p style="color:var(--muted);font-size:.84rem;margin-bottom:1rem">
+        Sérialisation <strong>RDF/XML</strong> de l'ontologie complète avec 82 individus réels.
+        Copiez le contenu dans un fichier <code class="inline">.owl</code>
+        et ouvrez-le dans <strong>Protégé 5.x</strong> via <em>File → Open</em>.
+      </p>
+      <div class="owl-code-wrap">
+        <button class="copy-btn" onclick="copyOWL()" id="copy-btn">⎘ Copier</button>
+        <div class="owl-code" id="owl-code-display"><div class="loading-msg">Chargement du code RDF/XML…</div></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<footer>
+  Ontologie de la Mode · Web Sémantique · OWL 2 / RDF / SPARQL · Protégé 5.x · Université 2025
+</footer>
+
+<script>
+// ── TABS ──
+document.querySelectorAll('.tab').forEach(t => {
+  t.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(x => x.classList.remove('active'));
+    t.classList.add('active');
+    document.getElementById('tab-' + t.dataset.tab).classList.add('active');
+    if (t.dataset.tab === 'code') loadOWLCode();
+  });
+});
+
+// ── STATS ──
+function renderStats() {
+  const s = [
+    { num:CLASSES.length,                    label:"Classes" },
+    { num:INDIVIDUALS.length,                label:"Individus" },
+    { num:OBJ_PROPS.length,                  label:"Prop. Objet" },
+    { num:DATA_PROPS.length,                 label:"Prop. Données" },
+    { num:CREATORS.filter(c=>c.sameAs && c.sameAs!=='Gabrielle_Chasnel').length + " owl:sameAs", label:"Identité OWL" },
+  ];
+  document.getElementById('stats-area').innerHTML = s.map(x =>
+    `<div class="stat-card"><div class="stat-num">${x.num}</div><div class="stat-label">${x.label}</div></div>`
+  ).join('');
+}
+
+// ── CLASS TREE (sidebar) ──
+function catColor(cat) {
+  return {root:'#6366f1',industrie:'#2563eb',socio:'#ec4899',attr:'#059669'}[cat]||'#9ca3af';
+}
+function buildTree() {
+  const roots = CLASSES.filter(c => !c.parent || c.parent === 'multiple');
+  const children = id => CLASSES.filter(c => c.parent === id);
+  function node(c) {
+    const ch = children(c.id);
+    return `<div>
+      <div class="tree-node" onclick="selectClass('${c.id}',event)">
+        <span class="tree-toggle">${ch.length?'▸':' '}</span>
+        <span class="class-dot" style="background:${catColor(c.cat)}"></span>
+        <span>${c.label}</span>
+      </div>
+      ${ch.length?`<div class="tree-children">${ch.map(node).join('')}</div>`:''}
+    </div>`;
+  }
+  document.getElementById('class-tree').innerHTML = roots.map(node).join('');
+}
+
+function selectClass(id, e) {
+  document.querySelectorAll('.tree-node').forEach(n=>n.classList.remove('active'));
+  e.currentTarget.classList.add('active');
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(x=>x.classList.remove('active'));
+  document.querySelector('[data-tab="classes"]').classList.add('active');
+  document.getElementById('tab-classes').classList.add('active');
+  const card = document.getElementById('cc-'+id);
+  if (card) { card.scrollIntoView({behavior:'smooth',block:'center'}); card.style.outline='2px solid var(--accent)'; setTimeout(()=>card.style.outline='',2000); }
+}
+
+// ── CLASSES GRID ──
+function badgeForCat(cat) {
+  if(cat==='root')      return '<span class="class-badge badge-root">Racine</span>';
+  if(cat==='industrie') return '<span class="class-badge badge-industrie">Industrie</span>';
+  if(cat==='socio')     return '<span class="class-badge badge-socio">Sociologie</span>';
+  return '<span class="class-badge badge-attr">Attribut</span>';
+}
+function renderClasses() {
+  document.getElementById('class-grid-area').innerHTML = CLASSES.map(c => `
+    <div class="class-card" id="cc-${c.id}">
+      ${badgeForCat(c.cat)}
+      <h4>${c.label}</h4>
+      ${c.parent && c.parent!=='multiple'?`<div class="parent">↳ ${c.parent.replace(/_/g,' ')}</div>`:''}
+      ${c.parent==='multiple'?`<div class="parent">↳ Héritage multiple</div>`:''}
+      <p class="comment">${c.comment}</p>
+    </div>`).join('');
+}
+
+// ── INDIVIDUALS ──
+const AVATAR_COLORS = [
+  {bg:'#eef2ff',border:'#c7d2fe',text:'#4f46e5'},
+  {bg:'#fdf2f8',border:'#fbcfe8',text:'#db2777'},
+  {bg:'#f0fdf4',border:'#bbf7d0',text:'#059669'},
+  {bg:'#fff7ed',border:'#fed7aa',text:'#d97706'},
+  {bg:'#eff6ff',border:'#bfdbfe',text:'#2563eb'},
+  {bg:'#fefce8',border:'#fef08a',text:'#ca8a04'},
+];
+let currentCat = 'all';
+
+function indCard(ind, i) {
+  const c = AVATAR_COLORS[i % AVATAR_COLORS.length];
+  const propRows = Object.entries(ind.data).map(([k,v]) =>
+    `<div class="prop-row"><span class="prop-key">${k}</span><span class="prop-val">${v}</span></div>`
+  ).join('');
+  return `<div class="ind-card">
+    <div class="ind-header">
+      <div class="ind-avatar" style="background:${c.bg};border-color:${c.border};color:${c.text}">${ind.emoji}</div>
+      <div>
+        <div class="ind-name">${ind.label}</div>
+        <div class="ind-type">${ind.type}</div>
+        ${ind.sameAs?`<span class="ind-sameas">≡ owl:sameAs → ${ind.sameAs.replace(/_/g,' ')}</span>`:''}
+      </div>
+    </div>
+    ${propRows}
+  </div>`;
+}
+
+function filterInds() {
+  const q = document.getElementById('ind-search').value.toLowerCase();
+  const filtered = INDIVIDUALS.filter(ind => {
+    const matchCat = currentCat === 'all' || ind.cat === currentCat;
+    const matchQ   = !q || ind.label.toLowerCase().includes(q) ||
+                     JSON.stringify(ind.data).toLowerCase().includes(q);
+    return matchCat && matchQ;
+  });
+  document.getElementById('ind-grid-area').innerHTML = filtered.map((ind,i) => indCard(ind,i)).join('') ||
+    '<p style="color:var(--muted);padding:1rem">Aucun résultat.</p>';
+  document.getElementById('ind-count').textContent = `${filtered.length} individu(s)`;
+}
+
+function setCat(btn) {
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  currentCat = btn.dataset.cat;
+  filterInds();
+}
+
+function renderIndividuals() { filterInds(); }
+
+function renderOverviewHighlights() {
+  const picks = [
+    CREATORS.find(c=>c.id==='Gabrielle_Chasnel'),
+    CREATORS.find(c=>c.id==='Virgil_Abloh'),
+    CREATORS.find(c=>c.id==='Karl_Lagerfeld'),
+    BRANDS.find(b=>b.id==='Gucci'),
+    BRANDS.find(b=>b.id==='Chanel'),
+    BRANDS.find(b=>b.id==='Louis_Vuitton'),
+    TRENDS.find(t=>t.id==='Streetwear'),
+    TRENDS.find(t=>t.id==='Quiet_Luxury'),
+  ].filter(Boolean).map((x,i) => ({
+    ...x,
+    cat: x.data.naissance ? 'createur' : (x.data.prix ? 'marque' : 'tendance'),
+    type: x.data.naissance ? 'Créateur de Mode' : (x.data.prix ? 'Marque' : (x.type||'Tendance')),
+  }));
+  document.getElementById('overview-highlights').innerHTML = picks.map((ind,i)=>indCard(ind,i)).join('');
+}
+
+// ── OBJECT PROPERTIES ──
+function renderObjProps() {
+  document.getElementById('obj-props-tbody').innerHTML = OBJ_PROPS.map(p => `
+    <tr>
+      <td><span class="prop-name">${p.label}</span> <code class="inline">#${p.id}</code></td>
+      <td>${p.domain.map(d=>`<span class="prop-domain">${d.replace(/_/g,' ')}</span>`).join(', ')}</td>
+      <td>${p.range.map(r=>`<span class="prop-range">${r.replace(/_/g,' ')}</span>`).join(', ')}</td>
+    </tr>`).join('');
+}
+
+// ── DATA PROPERTIES ──
+function renderDataProps() {
+  document.getElementById('data-props-tbody').innerHTML = DATA_PROPS.map(p => `
+    <tr>
+      <td><span class="prop-name">${p.label}</span> <code class="inline">#${p.id}</code></td>
+      <td><span class="prop-domain">${p.domain}</span></td>
+      <td><span class="prop-type">${p.type}</span></td>
+      <td>${p.functional?'<span class="func-badge">Fonctionnelle</span>':'—'}</td>
+    </tr>`).join('');
+}
+
+// ── DISJOINT ──
+function renderDisjoint() {
+  document.getElementById('disjoint-area').innerHTML = DISJOINT.map(d => `
+    <div class="class-card" style="margin-bottom:.8rem">
+      <h4 style="font-size:.87rem;margin-bottom:.4rem">${d.label}</h4>
+      <p class="comment" style="margin-bottom:.5rem">Classes mutuellement disjointes :</p>
+      <div>${d.classes.map(c=>`<span class="pill pill-violet">${c}</span>`).join(' ⊥ ')}</div>
+    </div>`).join('');
+}
+
+// ── SPARQL ──
+function renderSPARQL() {
+  document.getElementById('query-list').innerHTML = QUERIES.map((q,i) =>
+    `<div class="query-item${i===0?' active':''}" onclick="selectQuery(${i})">${q.title}</div>`
+  ).join('');
+  showQuery(0);
+}
+function selectQuery(i) {
+  document.querySelectorAll('.query-item').forEach((el,j)=>el.classList.toggle('active',j===i));
+  showQuery(i);
+}
+function showQuery(i) {
+  const q = QUERIES[i];
+  const hl = q.query
+    .replace(/(PREFIX|SELECT|WHERE|FILTER|ORDER BY|OPTIONAL|EXISTS|LIMIT|DESC|ASC)/g,'<span class="sparql-kw">$1</span>')
+    .replace(/(mode:|rdf:|rdfs:|owl:|xsd:)(\w*)/g,'<span class="sparql-pfx">$1</span><span class="sparql-iri">$2</span>')
+    .replace(/\?(\w+)/g,'<span class="sparql-var">?$1</span>')
+    .replace(/"([^"]*)"/g,'<span style="color:#c3e88d">"$1"</span>');
+  document.getElementById('sparql-panel').innerHTML = `
+    <div class="query-title">${q.title}</div>
+    <div class="query-desc">${q.desc}</div>
+    <div class="code-block"><pre>${hl}</pre></div>
+    <div class="results-wrap">
+      <div class="results-label">Résultats (Protégé / SPARQL endpoint)</div>
+      <table class="results-table">
+        <thead><tr>${q.cols.map(c=>`<th>${c}</th>`).join('')}</tr></thead>
+        <tbody>${q.rows.map(r=>`<tr>${r.map(v=>`<td>${v}</td>`).join('')}</tr>`).join('')}</tbody>
+      </table>
+      <div class="row-count">✓ ${q.rows.length} ligne(s)${q.note?` — ${q.note}`:''}</div>
+    </div>`;
+}
+
+// ── OWL CODE ──
+let owlRaw = '';
+function loadOWLCode() {
+  if (owlRaw) return; // already loaded
+  fetch('./la_mode.owl')
+    .then(r => { if (!r.ok) throw new Error(); return r.text(); })
+    .then(text => { owlRaw = text; renderOWLCode(text); })
+    .catch(() => {
+      // fallback: guide user to open via server
+      document.getElementById('owl-code-display').innerHTML =
+        `<div style="padding:2rem;color:#ccc;font-family:monospace;font-size:.82rem;line-height:1.8">
+  <span style="color:#546e7a"><!-- Le fichier la_mode.owl ne peut pas être chargé via file://
+       Ouvrez ce projet avec un serveur local ou sur GitHub Pages
+       pour afficher le code RDF/XML complet.
+
+       Pour GitHub Pages: activez Pages dans les paramètres du dépôt.
+       Pour local: lancez "npx serve ." dans ce dossier.
+
+       Le fichier la_mode.owl contient l'ontologie complète (82 individus). --></span>
+
+  <span style="color:#82aaff">&lt;?xml version=</span><span style="color:#c3e88d">"1.0"</span><span style="color:#82aaff">?&gt;</span>
+  <span style="color:#82aaff">&lt;rdf:RDF</span>
+       <span style="color:#ffcb6b">xmlns:owl</span>=<span style="color:#c3e88d">"http://www.w3.org/2002/07/owl#"</span>
+       <span style="color:#ffcb6b">xmlns:rdf</span>=<span style="color:#c3e88d">"http://www.w3.org/1999/02/22-rdf-syntax-ns#"</span>
+       <span style="color:#ffcb6b">xmlns:xsd</span>=<span style="color:#c3e88d">"http://www.w3.org/2001/XMLSchema#"</span>
+       <span style="color:#ffcb6b">xmlns:la_mode</span>=<span style="color:#c3e88d">"http://www.semanticweb.org/manel/ontologies/2025/1/la_mode#"</span><span style="color:#82aaff">&gt;</span>
+
+    <span style="color:#82aaff">&lt;owl:Ontology</span> <span style="color:#ffcb6b">rdf:about</span>=<span style="color:#c3e88d">"...la_mode"</span><span style="color:#82aaff">/&gt;</span>
+    <span style="color:#546e7a">&lt;!-- 16 Object Properties --&gt;</span>
+    <span style="color:#546e7a">&lt;!-- 11 Data Properties --&gt;</span>
+    <span style="color:#546e7a">&lt;!-- 21 Classes --&gt;</span>
+    <span style="color:#546e7a">&lt;!-- 82 Named Individuals (30 créateurs + 30 marques + 22 tendances) --&gt;</span>
+
+  <span style="color:#82aaff">&lt;/rdf:RDF&gt;</span></div>`;
+    });
+}
+
+function renderOWLCode(src) {
+  owlRaw = src;
+  const escaped = src.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  const hl = escaped
+    .replace(/(&lt;\/?)([\w:]+)/g, (m,p1,p2)=>`${p1}<span class="xml-tag">${p2}</span>`)
+    .replace(/([\w:]+)(=&quot;)/g,'<span class="xml-attr">$1</span>$2')
+    .replace(/(&quot;)([^&]*)(&quot;)/g,'<span class="xml-val">$1$2$3</span>')
+    .replace(/(&lt;!--[\s\S]*?--&gt;)/g,'<span class="xml-cmt">$1</span>');
+  document.getElementById('owl-code-display').innerHTML = hl;
+}
+
+function copyOWL() {
+  const text = owlRaw || document.getElementById('owl-code-display').innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('copy-btn');
+    btn.textContent = '✓ Copié !';
+    setTimeout(() => btn.textContent = '⎘ Copier', 2000);
+  });
+}
+
+// ── INIT ──
+renderStats();
+buildTree();
+renderClasses();
+renderIndividuals();
+renderOverviewHighlights();
+renderObjProps();
+renderDataProps();
+renderDisjoint();
+renderSPARQL();
+document.getElementById('ind-count').textContent = `${INDIVIDUALS.length} individu(s)`;
+</script>
+</body>
+</html>
