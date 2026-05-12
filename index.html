@@ -524,10 +524,10 @@ function selectQuery(i) {
 function showQuery(i) {
   const q = QUERIES[i];
   const hl = q.query
-    .replace(/(PREFIX|SELECT|WHERE|FILTER|ORDER BY|OPTIONAL|EXISTS|LIMIT|DESC|ASC)/g,'<span class="sparql-kw">$1</span>')
-    .replace(/(mode:|rdf:|rdfs:|owl:|xsd:)(\w*)/g,'<span class="sparql-pfx">$1</span><span class="sparql-iri">$2</span>')
-    .replace(/\?(\w+)/g,'<span class="sparql-var">?$1</span>')
-    .replace(/"([^"]*)"/g,'<span style="color:#c3e88d">"$1"</span>');
+    .replace(/"([^"\n]*)"/g,'<span style="color:#c3e88d">"$1"</span>')
+    .replace(/\b(PREFIX|SELECT|WHERE|FILTER|ORDER BY|OPTIONAL|EXISTS|LIMIT|DESC|ASC)\b/g,'<span class="sparql-kw">$1</span>')
+    .replace(/\b(mode|rdf|rdfs|owl|xsd):(\w*)/g,'<span class="sparql-pfx">$1:</span><span class="sparql-iri">$2</span>')
+    .replace(/\?(\w+)/g,'<span class="sparql-var">?$1</span>');
   document.getElementById('sparql-panel').innerHTML = `
     <div class="query-title">${q.title}</div>
     <div class="query-desc">${q.desc}</div>
